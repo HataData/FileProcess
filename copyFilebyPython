@@ -1,0 +1,116 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug  2 16:13:42 2021
+
+@author: tony
+"""
+
+# -*- coding: utf-8 -*-
+
+import os
+import time
+import json
+import shutil
+import pandas as pd
+import logging
+import time
+
+dictip=r'C:\Copy_log\ip.txt'# your file pc ip
+
+
+
+
+ip2pc={}
+
+if os.path.exists(dictip):
+    with open(dictip,encoding='utf-8') as f:
+        str=''.join(f.readlines())
+
+        ip2pc=json.loads(str)
+
+
+
+ips=iplist
+
+
+fr=open(dictip,'r+')
+dic=eval(fr.read())
+print("getdic-=-=-",dic)
+key=dic.keys()
+
+for dickey,dicvalue in dic.items():
+    if dickey in ip2pc:
+
+        ips=[dickey]
+
+        
+setfile=time.strftime('%Y%m%d')
+issuesip=open(r'C:\Copyc_log\issuesIP'+setfile+'.txt','w+',encoding='utf-8', errors='ignore') 
+setdate=time.strftime('%y%m%d')
+
+to_path = "C:\\copyDTSC"
+# to_path=r'//xxx,xxx,xxx,xxx//c$//c_log'
+dfiles=os.listdir(to_path)
+for delfile in dfiles:
+    delpath =to_path+"/"+delfile 
+    # print("delpath",delpath)
+    file_time=time.localtime(os.path.getmtime(delpath))
+    createfile_time=time.strftime("%Y%m%d",file_time) 
+    print("createfile_time time",createfile_time)      
+    if not delfile.endswith(setfile+".LOG"):
+        print("dd",to_path+"\\"+delfile)
+        os.remove(to_path+"\\"+delfile)
+
+
+with open(r'C:\Copy_Till_Dtsc_log\poslist.txt','r',encoding = "utf-8") as getip:
+    for line in getip:
+        ips.append(line.strip('\n').strip(''))
+
+    for ip in ips:
+        pingip=os.popen('ping '.format(ip))
+        oslist=os.popen(f"ping {ip}")
+        osip=oslist.read()
+        oslist.close()
+        # print("osip-osip",osip)
+        result=os.system('ping -n 1 {}'.format(ip))
+        # print("resul=-=",result)
+        path=r'\\'+ ip +'\\c$\\SmartWin\\DTSC'
+        
+        # todayfile='Swifthase_'
+        # print("path",path)
+        if osip.count(osip.count('TTL expired in transit.') or osip.count('Destination net unreachable.') or osip.count('timed out'):
+            issuesip.write(osip)
+            # print("ip---0==",osip)
+        else:
+            # filename=getlatestlog(path)
+            for f in os.listdir(path):
+                if f.endswith('.LOG') and f.startswith('DS_'):
+                    filepath=path+'\\'+f
+                    filename=f
+            print("filename----",filename)
+            pc=ip2pc.get(ip,'')
+            print("pc..",pc)
+            fpath=path+'\\DS_'+setdate+'.LOG'
+            
+            if not os.path.exists(fpath):
+                issuesip.write(fpath)
+        
+            files=os.listdir(path)
+            for file in files:
+             
+
+                if file.startswith("DS_"):
+                    print("file+++++++",file)
+
+                elif os.path.isfile(path+'\\'+filename):
+                
+                    newlogname=f'C:\\copyDTSC\\{pc}_{ip}'+filename
+                    # newlogname=f'//xx.xx.xx.xx//d$//Till_log//{pc}_{ip}'+filename
+                    print("new filename",newlogname)        
+                    shutil.copyfile(path+'\\'+filename, newlogname)
+                    print("path+'\\'+filename..",path+'\\'+filename)
+
+                else:
+                    print("not dtscfile in folder-----",file)
+                    issuesip.write(file)
+
